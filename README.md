@@ -1,11 +1,11 @@
-<h1 align="left">
-  <img src="hangman logo.png" width="70" style="vertical-align: middle; margin-right: 10px;">
+<h1 align="center">
+  <img src="hangman logo.png" width="100" style="vertical-align: middle; margin-right: 10px;">
   Hangman Game (Python)
 </h1>
 
+
 A simple and interactive **CLI-based Hangman game** written in Python.  
 The game randomly selects a word and challenges the player to guess it within a limited number of attempts.
-
 This project is ideal for beginners learning Python loops, conditionals, string manipulation, and functions.
 
 ---
@@ -73,6 +73,13 @@ python hangman.py
 - Drawing the hangman step-by-step on wrong guesses
 - Ending with win/lose and replay option
 
+---
+
+## 👨‍💻 Author
+
+Tirth Patel
+
+GitHub: https://github.com/TIRTHMP
 
 
 
