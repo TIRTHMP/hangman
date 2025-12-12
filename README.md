@@ -1,4 +1,7 @@
-# Hangman Game (Python)
+<h1 align="left">
+  <img src="hangman logo.png" width="70" style="vertical-align: middle; margin-right: 10px;">
+  Hangman Game (Python)
+</h1>
 
 A simple and interactive **CLI-based Hangman game** written in Python.  
 The game randomly selects a word and challenges the player to guess it within a limited number of attempts.
