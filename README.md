@@ -43,7 +43,6 @@ hangman/
 │
 ├── Hangman.py # Main source code
 ├── README.md # Project documentation
-├── requirements.txt # Package dependencies (optional)
 └── LICENSE # License file (optional)
 ```
 
