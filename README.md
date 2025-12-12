@@ -41,7 +41,7 @@ Enter your guess:
 ```
 hangman/
 │
-├── hangman.py # Main source code
+├── Hangman.py # Main source code
 ├── README.md # Project documentation
 ├── requirements.txt # Package dependencies (optional)
 └── LICENSE # License file (optional)
