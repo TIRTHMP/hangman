@@ -2,18 +2,20 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import random
+import pygame
+from PIL import Image, ImageTk
 
-# -------------------- APP SETTINGS --------------------
+# -------------------- APP CONFIG --------------------
 
-ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+ctk.set_appearance_mode("dark")
 
 # -------------------- WORD BANK --------------------
 
-WORD_BANK = {
-    "Easy": ["cat", "dog", "sun", "book", "tree"],
-    "Medium": ["border", "promise", "rhyme", "plants"],
-    "Hard": ["programming", "cybersecurity", "algorithm", "artificial"]
+WORDS = {
+    "Easy": ["cat", "dog", "sun", "tree"],
+    "Medium": ["border", "promise", "plants"],
+    "Hard": ["programming", "cybersecurity", "algorithm"]
 }
 
 ATTEMPTS = {
@@ -29,27 +31,49 @@ class HangmanApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Hangman Game")
-        self.geometry("600x650")
+        self.geometry("620x720")
         self.resizable(False, False)
 
         self.difficulty = ctk.StringVar(value="Medium")
+        self.theme = "dark"
 
+        pygame.mixer.init()
+        self.load_sounds()
+        self.load_images()
         self.create_widgets()
         self.start_game()
+
+    # -------------------- LOAD ASSETS --------------------
+
+    def load_images(self):
+        self.images = []
+        for i in range(7):
+            img = Image.open(f"assets/Hangman-{i}.gif").resize((320, 260))
+            self.images.append(ImageTk.PhotoImage(img))
+
+    def load_sounds(self):
+        self.sound_correct = pygame.mixer.Sound("sounds/correct.wav")
+        self.sound_wrong = pygame.mixer.Sound("sounds/wrong.wav")
+        self.sound_win = pygame.mixer.Sound("sounds/win.wav")
+        self.sound_lose = pygame.mixer.Sound("sounds/lose.wav")
+        self.sound_click = pygame.mixer.Sound("sounds/click.wav")
+
+    def play_click(self):
+        self.sound_click.play()
 
     # -------------------- GAME SETUP --------------------
 
     def start_game(self):
         level = self.difficulty.get()
-        self.word = random.choice(WORD_BANK[level])
+        self.word = random.choice(WORDS[level])
         self.display = ["_"] * len(self.word)
         self.attempts = ATTEMPTS[level]
-        self.guessed = []
         self.stage = 0
+        self.guessed = []
+        self.hint_used = False
 
         self.update_ui()
-        self.canvas.delete("all")
-        self.draw_gallows()
+        self.image_label.configure(image=self.images[0])
         self.entry.configure(state="normal")
 
     # -------------------- UI --------------------
@@ -59,12 +83,17 @@ class HangmanApp(ctk.CTk):
         ctk.CTkLabel(
             self,
             text="HANGMAN",
-            font=ctk.CTkFont(size=28, weight="bold")
-        ).pack(pady=15)
+            font=ctk.CTkFont(size=30, weight="bold")
+        ).pack(pady=10)
 
-        # Difficulty selector
+        ctk.CTkButton(
+            self,
+            text="Toggle Light / Dark",
+            command=self.toggle_theme
+        ).pack(pady=5)
+
         diff_frame = ctk.CTkFrame(self)
-        diff_frame.pack(pady=5)
+        diff_frame.pack(pady=10)
 
         for level in ["Easy", "Medium", "Hard"]:
             ctk.CTkRadioButton(
@@ -75,14 +104,10 @@ class HangmanApp(ctk.CTk):
                 command=self.start_game
             ).pack(side="left", padx=15)
 
-        # Canvas
-        self.canvas = tk.Canvas(self, width=320, height=260, bg="#1e1e1e", highlightthickness=0)
-        self.canvas.pack(pady=15)
+        self.image_label = ctk.CTkLabel(self, text="")
+        self.image_label.pack(pady=15)
 
-        self.word_label = ctk.CTkLabel(
-            self,
-            font=ctk.CTkFont(size=22)
-        )
+        self.word_label = ctk.CTkLabel(self, font=ctk.CTkFont(size=22))
         self.word_label.pack(pady=10)
 
         self.attempts_label = ctk.CTkLabel(self)
@@ -91,27 +116,28 @@ class HangmanApp(ctk.CTk):
         self.guessed_label = ctk.CTkLabel(self)
         self.guessed_label.pack(pady=5)
 
-        self.entry = ctk.CTkEntry(
-            self,
-            width=80,
-            justify="center",
-            font=ctk.CTkFont(size=16)
-        )
+        self.entry = ctk.CTkEntry(self, width=80, justify="center")
         self.entry.pack(pady=10)
 
         ctk.CTkButton(
             self,
             text="Guess",
-            command=self.check_guess,
-            width=120
+            command=lambda: [self.play_click(), self.check_guess()]
+        ).pack(pady=5)
+
+        ctk.CTkButton(
+            self,
+            text="Hint (1 only)",
+            fg_color="orange",
+            command=lambda: [self.play_click(), self.use_hint()]
         ).pack(pady=5)
 
         ctk.CTkButton(
             self,
             text="Restart Game",
-            command=self.start_game,
-            fg_color="gray"
-        ).pack(pady=5)
+            fg_color="gray",
+            command=lambda: [self.play_click(), self.start_game()]
+        ).pack(pady=10)
 
     # -------------------- GAME LOGIC --------------------
 
@@ -124,29 +150,44 @@ class HangmanApp(ctk.CTk):
             return
 
         if guess in self.guessed:
-            messagebox.showinfo("Info", "Letter already guessed")
             return
 
         self.guessed.append(guess)
 
         if guess in self.word:
+            self.sound_correct.play()
             for i, ch in enumerate(self.word):
                 if ch == guess:
                     self.display[i] = guess
         else:
-            self.attempts -= 1
-            self.stage += 1
-            self.draw_hangman()
+            self.sound_wrong.play()
+            self.fail_attempt()
 
         self.update_ui()
+        self.check_game_over()
 
-        if "_" not in self.display:
-            messagebox.showinfo("Victory", "🎉 You won!")
-            self.entry.configure(state="disabled")
+    def use_hint(self):
+        if self.hint_used:
+            messagebox.showinfo("Hint", "Hint already used")
+            return
 
-        elif self.attempts == 0:
-            messagebox.showerror("Game Over", f"Word was: {self.word}")
-            self.entry.configure(state="disabled")
+        hidden = [i for i, c in enumerate(self.display) if c == "_"]
+        if not hidden:
+            return
+
+        index = random.choice(hidden)
+        self.display[index] = self.word[index]
+        self.hint_used = True
+        self.sound_wrong.play()
+        self.fail_attempt()
+
+        self.update_ui()
+        self.check_game_over()
+
+    def fail_attempt(self):
+        self.attempts -= 1
+        self.stage += 1
+        self.image_label.configure(image=self.images[self.stage])
 
     # -------------------- UI UPDATE --------------------
 
@@ -155,31 +196,22 @@ class HangmanApp(ctk.CTk):
         self.attempts_label.configure(text=f"Attempts left: {self.attempts}")
         self.guessed_label.configure(text="Guessed: " + ", ".join(self.guessed))
 
-    # -------------------- DRAWING --------------------
+    def check_game_over(self):
+        if "_" not in self.display:
+            self.sound_win.play()
+            messagebox.showinfo("Victory", "🎉 You Won!")
+            self.entry.configure(state="disabled")
 
-    def draw_gallows(self):
-        c = self.canvas
-        c.create_line(60, 240, 260, 240, fill="white", width=3)
-        c.create_line(110, 240, 110, 40, fill="white", width=3)
-        c.create_line(110, 40, 200, 40, fill="white", width=3)
-        c.create_line(200, 40, 200, 70, fill="white", width=3)
+        elif self.attempts == 0:
+            self.sound_lose.play()
+            messagebox.showerror("Game Over", f"Word was: {self.word}")
+            self.entry.configure(state="disabled")
 
-    def draw_hangman(self):
-        c = self.canvas
-        s = self.stage
+    # -------------------- THEME --------------------
 
-        if s == 1:
-            c.create_oval(180, 70, 220, 110, outline="white", width=2)
-        elif s == 2:
-            c.create_line(200, 110, 200, 160, fill="white", width=2)
-        elif s == 3:
-            c.create_line(200, 120, 170, 140, fill="white", width=2)
-        elif s == 4:
-            c.create_line(200, 120, 230, 140, fill="white", width=2)
-        elif s == 5:
-            c.create_line(200, 160, 170, 200, fill="white", width=2)
-        elif s == 6:
-            c.create_line(200, 160, 230, 200, fill="white", width=2)
+    def toggle_theme(self):
+        self.theme = "light" if self.theme == "dark" else "dark"
+        ctk.set_appearance_mode(self.theme)
 
 # -------------------- RUN APP --------------------
 
