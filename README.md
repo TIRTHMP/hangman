@@ -3,37 +3,32 @@
   Hangman Game (Python)
 </h1>
 
+A modern, feature-rich **Hangman Game** built using **Python** and **CustomTkinter**, featuring animated graphics, sound effects, difficulty levels, and a clean user interface.
 
-A simple and interactive **CLI-based Hangman game** written in Python.  
-The game randomly selects a word and challenges the player to guess it within a limited number of attempts.
-This project is ideal for beginners learning Python loops, conditionals, string manipulation, and functions.
+This project demonstrates GUI development, event-driven programming, and structured Python code — making it ideal for learning and portfolio showcase.
 
 ---
 
-## 🎮 Features
+## ✨ Features
 
-- Random word selection  
-- ASCII-art hangman drawings  
-- Input validation  
-- Replay option  
-- Step-by-step gameplay  
-- Beginner-friendly and fully console-based  
+- 🎨 **Modern UI** using CustomTkinter
+- 🌗 **Light / Dark mode toggle**
+- 🎯 **Difficulty levels** (Easy, Medium, Hard)
+- 🧠 **Hint system** (limited, strategic use)
+- 🖼️ **Animated Hangman GIFs**
+- 🔊 **Sound effects** (correct, wrong, win, lose, click)
+- 🔁 Restart game anytime
+- 🧩 Clean, object-oriented design
 
 ---
 
 ## 🖥️ Demo
 
-```
-Welcome to Hangman game
-Enter your name: John
-Hello John! Best of Luck!
-The game is about to start!
-Let's play Hangman!
+> 🎥 **Gameplay Demo (GIF)**  
+> *(See demo.gif below)*
 
-This is the Hangman Word: _____
-Enter your guess:
+![Hangman Demo](demo.gif)
 
-```
 ---
 
 ## 📁 Project Structure
@@ -41,9 +36,27 @@ Enter your guess:
 ```
 hangman/
 │
-├── Hangman.py # Main source code
+├── Hangman.py/
+│
+├── assets/
+│ ├── Hangman-0.gif
+│ ├── Hangman-1.gif
+│ ├── Hangman-2.gif
+│ ├── Hangman-3.gif
+│ ├── Hangman-4.gif
+│ ├── Hangman-5.gif
+│ └── Hangman-6.gif
+│
+├── sounds/
+│ ├── correct.wav
+│ ├── wrong.wav
+│ ├── win.wav
+│ ├── lose.wav
+│ └── click.wav
+│
 ├── README.md # Project documentation
-└── LICENSE # License file (optional)
+└── LICENSE # License file
+
 ```
 
 ---
@@ -55,28 +68,32 @@ hangman/
 git clone https://github.com/TIRTHMP/hangman-game.git
 cd hangman-game
 ```
+### 3. Install Dependencies
+```bash
+pip install customtkinter pillow pygame-ce
+```
 
 ### 2. Run the game
 ```bash
-python hangman.py
+python Hangman.py
 ```
 ---
 
-## 🧠 How It Works
+## 🎮 How to Play
 
-- The game logic includes:
-- Choosing a random word
-- Showing blank underscores for unknown letters
-- Replacing letters as the user guesses correctly
-- Tracking already-guessed letters
-- Drawing the hangman step-by-step on wrong guesses
-- Ending with win/lose and replay option
+- Select a difficulty level
+- Guess letters using the input box
+- Use one hint per game if stuck
+- Avoid running out of attempts
+- Toggle Light/Dark mode anytime
 
 ---
 
 ## 👨‍💻 Author
 
 Tirth Patel
+
+BTech Computer Science Engineering Student
 
 GitHub: https://github.com/TIRTHMP
 
