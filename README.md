@@ -88,6 +88,13 @@ python Hangman.py
 
 ---
 
+## 🚀 Future Improvements
+
+- Create a desktop and mobile compatible version
+- Deploy it with a always active link using Vercel.
+
+---
+
 ## 👨‍💻 Author
 
 Tirth Patel
