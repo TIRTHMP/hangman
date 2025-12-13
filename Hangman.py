@@ -1,150 +1,188 @@
+import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import random
 
-# -------------------- GAME SETUP --------------------
+# -------------------- APP SETTINGS --------------------
 
-WORDS = [
-    "january", "border", "image", "film", "promise",
-    "kids", "lungs", "doll", "rhyme", "damage", "plants"
-]
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
-MAX_ATTEMPTS = 5
+# -------------------- WORD BANK --------------------
 
-# -------------------- MAIN CLASS --------------------
+WORD_BANK = {
+    "Easy": ["cat", "dog", "sun", "book", "tree"],
+    "Medium": ["border", "promise", "rhyme", "plants"],
+    "Hard": ["programming", "cybersecurity", "algorithm", "artificial"]
+}
 
-class HangmanGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Hangman Game")
-        self.root.geometry("420x520")
-        self.root.resizable(False, False)
+ATTEMPTS = {
+    "Easy": 7,
+    "Medium": 5,
+    "Hard": 4
+}
 
-        self.start_game()
+# -------------------- MAIN APP --------------------
+
+class HangmanApp(ctk.CTk):
+
+    def __init__(self):
+        super().__init__()
+        self.title("Hangman Game")
+        self.geometry("600x650")
+        self.resizable(False, False)
+
+        self.difficulty = ctk.StringVar(value="Medium")
+
         self.create_widgets()
+        self.start_game()
+
+    # -------------------- GAME SETUP --------------------
+
+    def start_game(self):
+        level = self.difficulty.get()
+        self.word = random.choice(WORD_BANK[level])
+        self.display = ["_"] * len(self.word)
+        self.attempts = ATTEMPTS[level]
+        self.guessed = []
+        self.stage = 0
+
+        self.update_ui()
+        self.canvas.delete("all")
+        self.draw_gallows()
+        self.entry.configure(state="normal")
+
+    # -------------------- UI --------------------
+
+    def create_widgets(self):
+
+        ctk.CTkLabel(
+            self,
+            text="HANGMAN",
+            font=ctk.CTkFont(size=28, weight="bold")
+        ).pack(pady=15)
+
+        # Difficulty selector
+        diff_frame = ctk.CTkFrame(self)
+        diff_frame.pack(pady=5)
+
+        for level in ["Easy", "Medium", "Hard"]:
+            ctk.CTkRadioButton(
+                diff_frame,
+                text=level,
+                variable=self.difficulty,
+                value=level,
+                command=self.start_game
+            ).pack(side="left", padx=15)
+
+        # Canvas
+        self.canvas = tk.Canvas(self, width=320, height=260, bg="#1e1e1e", highlightthickness=0)
+        self.canvas.pack(pady=15)
+
+        self.word_label = ctk.CTkLabel(
+            self,
+            font=ctk.CTkFont(size=22)
+        )
+        self.word_label.pack(pady=10)
+
+        self.attempts_label = ctk.CTkLabel(self)
+        self.attempts_label.pack()
+
+        self.guessed_label = ctk.CTkLabel(self)
+        self.guessed_label.pack(pady=5)
+
+        self.entry = ctk.CTkEntry(
+            self,
+            width=80,
+            justify="center",
+            font=ctk.CTkFont(size=16)
+        )
+        self.entry.pack(pady=10)
+
+        ctk.CTkButton(
+            self,
+            text="Guess",
+            command=self.check_guess,
+            width=120
+        ).pack(pady=5)
+
+        ctk.CTkButton(
+            self,
+            text="Restart Game",
+            command=self.start_game,
+            fg_color="gray"
+        ).pack(pady=5)
 
     # -------------------- GAME LOGIC --------------------
 
-    def start_game(self):
-        self.word = random.choice(WORDS)
-        self.display = ["_"] * len(self.word)
-        self.attempts = MAX_ATTEMPTS
-        self.guessed_letters = []
-
-    # -------------------- GUI LAYOUT --------------------
-
-    def create_widgets(self):
-        self.title = tk.Label(
-            self.root,
-            text="HANGMAN GAME",
-            font=("Arial", 22, "bold")
-        )
-        self.title.pack(pady=10)
-
-        self.word_label = tk.Label(
-            self.root,
-            text=" ".join(self.display),
-            font=("Arial", 18)
-        )
-        self.word_label.pack(pady=20)
-
-        self.attempts_label = tk.Label(
-            self.root,
-            text=f"Attempts left: {self.attempts}",
-            font=("Arial", 12)
-        )
-        self.attempts_label.pack(pady=5)
-
-        self.guessed_label = tk.Label(
-            self.root,
-            text="Guessed letters: ",
-            font=("Arial", 10)
-        )
-        self.guessed_label.pack(pady=5)
-
-        self.entry = tk.Entry(
-            self.root,
-            font=("Arial", 14),
-            width=5,
-            justify="center"
-        )
-        self.entry.pack(pady=10)
-        self.entry.focus()
-
-        self.guess_button = tk.Button(
-            self.root,
-            text="Guess",
-            font=("Arial", 12),
-            command=self.check_guess
-        )
-        self.guess_button.pack(pady=10)
-
-        self.restart_button = tk.Button(
-            self.root,
-            text="Restart Game",
-            font=("Arial", 10),
-            command=self.restart_game
-        )
-        self.restart_button.pack(pady=5)
-
-    # -------------------- GAME FUNCTION --------------------
-
     def check_guess(self):
-        guess = self.entry.get().lower().strip()
-        self.entry.delete(0, tk.END)
+        guess = self.entry.get().lower()
+        self.entry.delete(0, ctk.END)
 
         if len(guess) != 1 or not guess.isalpha():
-            messagebox.showwarning("Invalid Input", "Please enter ONE alphabet letter.")
+            messagebox.showwarning("Invalid Input", "Enter one alphabet only")
             return
 
-        if guess in self.guessed_letters:
-            messagebox.showinfo("Info", "You already guessed this letter.")
+        if guess in self.guessed:
+            messagebox.showinfo("Info", "Letter already guessed")
             return
 
-        self.guessed_letters.append(guess)
-        self.guessed_label.config(
-            text="Guessed letters: " + ", ".join(self.guessed_letters)
-        )
+        self.guessed.append(guess)
 
         if guess in self.word:
-            for i, letter in enumerate(self.word):
-                if letter == guess:
+            for i, ch in enumerate(self.word):
+                if ch == guess:
                     self.display[i] = guess
         else:
             self.attempts -= 1
+            self.stage += 1
+            self.draw_hangman()
 
-        self.word_label.config(text=" ".join(self.display))
-        self.attempts_label.config(text=f"Attempts left: {self.attempts}")
+        self.update_ui()
 
         if "_" not in self.display:
-            messagebox.showinfo("Congratulations!", "You guessed the word correctly 🎉")
-            self.disable_game()
+            messagebox.showinfo("Victory", "🎉 You won!")
+            self.entry.configure(state="disabled")
 
         elif self.attempts == 0:
-            messagebox.showerror(
-                "Game Over",
-                f"You are hanged!\nThe word was: {self.word}"
-            )
-            self.disable_game()
+            messagebox.showerror("Game Over", f"Word was: {self.word}")
+            self.entry.configure(state="disabled")
 
-    # -------------------- HELPER FUNCTIONS --------------------
+    # -------------------- UI UPDATE --------------------
 
-    def disable_game(self):
-        self.guess_button.config(state="disabled")
-        self.entry.config(state="disabled")
+    def update_ui(self):
+        self.word_label.configure(text=" ".join(self.display))
+        self.attempts_label.configure(text=f"Attempts left: {self.attempts}")
+        self.guessed_label.configure(text="Guessed: " + ", ".join(self.guessed))
 
-    def restart_game(self):
-        self.start_game()
-        self.word_label.config(text=" ".join(self.display))
-        self.attempts_label.config(text=f"Attempts left: {self.attempts}")
-        self.guessed_label.config(text="Guessed letters: ")
-        self.guess_button.config(state="normal")
-        self.entry.config(state="normal")
-        self.entry.focus()
+    # -------------------- DRAWING --------------------
+
+    def draw_gallows(self):
+        c = self.canvas
+        c.create_line(60, 240, 260, 240, fill="white", width=3)
+        c.create_line(110, 240, 110, 40, fill="white", width=3)
+        c.create_line(110, 40, 200, 40, fill="white", width=3)
+        c.create_line(200, 40, 200, 70, fill="white", width=3)
+
+    def draw_hangman(self):
+        c = self.canvas
+        s = self.stage
+
+        if s == 1:
+            c.create_oval(180, 70, 220, 110, outline="white", width=2)
+        elif s == 2:
+            c.create_line(200, 110, 200, 160, fill="white", width=2)
+        elif s == 3:
+            c.create_line(200, 120, 170, 140, fill="white", width=2)
+        elif s == 4:
+            c.create_line(200, 120, 230, 140, fill="white", width=2)
+        elif s == 5:
+            c.create_line(200, 160, 170, 200, fill="white", width=2)
+        elif s == 6:
+            c.create_line(200, 160, 230, 200, fill="white", width=2)
 
 # -------------------- RUN APP --------------------
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = HangmanGUI(root)
-    root.mainloop()
+    app = HangmanApp()
+    app.mainloop()
