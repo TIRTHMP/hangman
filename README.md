@@ -25,7 +25,6 @@ This project demonstrates GUI development, event-driven programming, and structu
 ## 🖥️ Demo
 
 > 🎥 **Gameplay Demo (GIF)**  
-> *(See demo.gif below)*
 
 ![Hangman Demo](demo.gif)
 
