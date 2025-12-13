@@ -1,3 +1,5 @@
+<!--
+
 <h1 align="center">
   <img src="hangman logo.png" width="100" style="vertical-align: middle; margin-right: 10px;">
   Hangman Game (Python)
@@ -80,6 +82,6 @@ Tirth Patel
 
 GitHub: https://github.com/TIRTHMP
 
-
+-->
 
 
